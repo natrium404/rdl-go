@@ -27,4 +27,4 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## FIN
 
-![SLEEPY](https://tenor.com/bwjM6.gif)
+![SLEEPY](./frontend/public/sleepy-sleepy-cat.gif)
