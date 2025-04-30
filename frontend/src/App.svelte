@@ -20,7 +20,7 @@
   let data = $derived(res.Data);
 
   let processing = $state(false);
-  let videoRef: HTMLVideoElement;
+  let videoRef: HTMLVideoElement | null = $state(null);
 
   let logQueue: string[] = [];
   let logs: string[] = $state([]);
@@ -66,7 +66,7 @@
     data = res.Data;
     if (res.Success) {
       url = "";
-      videoRef.load();
+      videoRef?.load();
     }
     isError = !res.Success;
   };

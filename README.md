@@ -17,6 +17,10 @@ RDL a short form of Reel Downloader. It's a cross platform desktop application f
 - [Go](https://go.dev/)
 - [chromedp](https://github.com/chromedp/chromedp)
 
+## TODO
+
+- [ ] Download private reels
+
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
