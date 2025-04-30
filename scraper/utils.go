@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -207,7 +206,6 @@ func downloadBrowser(dir string) (string, error) {
 
 	platform := getPlatform()
 	headlessShells := chromeJsonResponse.Channels.Stable.Downloads.Headless
-	log.Printf("\033[31m DATA:\033[0m %+v", headlessShells)
 
 	var downloadURL string
 	for _, shell := range headlessShells {
@@ -215,10 +213,8 @@ func downloadBrowser(dir string) (string, error) {
 			downloadURL = shell.URL
 		}
 	}
-	log.Printf("\033[31mSHELLS:\033[0m %+v", downloadURL)
 
 	// Downlaod file from url
-	// fmt.Println("URL:", downloadURL)
 	filename, err := downloadFile(downloadURL, dir)
 	if err != nil {
 		Log(fmt.Sprintf("Oops... Something wrong. Error: %s", err))

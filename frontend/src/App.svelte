@@ -20,6 +20,7 @@
   let data = $derived(res.Data);
 
   let processing = $state(false);
+  let videoRef: HTMLVideoElement;
 
   let logQueue: string[] = [];
   let logs: string[] = $state([]);
@@ -65,6 +66,7 @@
     data = res.Data;
     if (res.Success) {
       url = "";
+      videoRef.load();
     }
     isError = !res.Success;
   };
@@ -96,6 +98,7 @@
           const vid = e.target as HTMLVideoElement;
           vid.volume = 0.5;
         }}
+        bind:this={videoRef}
       >
         <track kind="captions" />
         <source src={data.Reel} />
