@@ -5,11 +5,20 @@ import (
 	"rdl/models"
 )
 
-var Logger func(message string)
+var (
+	Logger         func(message string)
+	ProgressLogger func(message string)
+)
 
 func Log(message string) {
 	if Logger != nil {
 		Logger(message)
+	}
+}
+
+func ProgressLog(message string) {
+	if ProgressLogger != nil {
+		ProgressLogger(message)
 	}
 }
 
@@ -23,7 +32,7 @@ func Scraper(url string) Response {
 	reelID, valid := isValidURL(url)
 
 	if !valid {
-		Log("Not a valid url.")
+		ProgressLog("Not a valid url.")
 		return Response{
 			Data:    models.VideoData{},
 			Success: false,

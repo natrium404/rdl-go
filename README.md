@@ -1,16 +1,26 @@
 # README
 
-## About
+RDL a short form of Reel Downloader. It's a cross platform desktop application for downloading instagram reels.
 
-This is the official Wails Svelte template.
+## Features
 
-## Live Development
+- Lightweight desktop application
+- Use chromium-based browser in the hood
+- Auto download a headless chromium unless it found any chromium-based browser in the os
+- Easy to use
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+## Tech Stack
 
-## Building
+- [Wails](https://github.com/wailsapp/wails)
+- [Svelte](https://svelte.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Go](https://go.dev/)
+- [chromedp](https://github.com/chromedp/chromedp)
 
-To build a redistributable, production mode package, use `wails build`.
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## FIN
+
+![SLEEPY](https://tenor.com/bwjM6.gif)

@@ -3,6 +3,8 @@ package scraper
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -12,11 +14,60 @@ import (
 type Scrape struct{}
 
 func scrapeFromURL(url string) (string, bool) {
-	ctx, cancle := context.WithTimeout(context.Background(), 60*time.Second)
+	// Chrome options
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
+		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("single-process", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("memory-pressure-off", true),
+		chromedp.Flag("remote-debugging-port", "0"),
+		chromedp.Flag("no-zygote", true),
+		chromedp.Flag("disable-extension", true),
+		chromedp.Flag("disable-plugins", true),
+		chromedp.Flag("disable-default-apps", true),
+		chromedp.Flag("disable-sync", true))
+
+	// Find browser
+	browser := findBrowser()
+	if browser.Path != "" {
+		Log(fmt.Sprintf("Chromium-based browser detected!! Using %s", browser.Name))
+	} else {
+		fmt.Println("No chromium-based browser found!! Downloading one might take time.")
+		// Downlaod browser
+		cacheDir, err := os.UserCacheDir()
+		if err != nil {
+			Log(fmt.Sprintf("Can't get the cache diretory. Error: %s", err))
+			return "", false
+		}
+		downloadDir := filepath.Join(cacheDir, "chromedp")
+		filename, err := downloadBrowser(downloadDir)
+		if err != nil {
+			Log(fmt.Sprintf("Oops... Download failed. Error: %s", err))
+			return "", false
+		}
+		err = extract(filepath.Join(downloadDir, filename), downloadDir)
+		if err != nil {
+			Log(fmt.Sprintf("Oops... Unziping failed. Error: %s", err))
+			return "", false
+		}
+
+		browser = findDownloadedBrowser()
+		Log("Download successfull...")
+
+	}
+
+	opts = append(opts, chromedp.ExecPath(browser.Path))
+
+	ctx, cancle := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancle()
 
 	Log("Initializing the browser...")
-	chromeCtx, cancle := chromedp.NewContext(ctx)
+	optCtx, cancle := chromedp.NewExecAllocator(ctx, opts...)
+	defer cancle()
+
+	chromeCtx, cancle := chromedp.NewContext(optCtx)
 	defer cancle()
 
 	Log("Checking the reel...")

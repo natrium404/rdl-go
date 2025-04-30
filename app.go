@@ -30,6 +30,10 @@ func (a *App) startup(ctx context.Context) {
 	scraper.Logger = func(message string) {
 		runtime.EventsEmit(a.ctx, "log", message)
 	}
+
+	scraper.ProgressLogger = func(message string) {
+		runtime.EventsEmit(a.ctx, "progressbar", message)
+	}
 }
 
 // Scrape the web page from the url

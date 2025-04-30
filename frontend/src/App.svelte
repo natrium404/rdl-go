@@ -29,9 +29,14 @@
       logQueue.push(message);
       logDelay();
     });
+
+    EventsOn("progressbar", (message) => {
+      logQueue.push(message);
+      logDelay(0);
+    });
   });
 
-  const logDelay = async () => {
+  const logDelay = async (delay: number = 200) => {
     if (processing) return;
 
     processing = true;
@@ -39,7 +44,7 @@
     while (logQueue.length > 0) {
       const nextLog = logQueue.shift() || "";
 
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       logs.push(nextLog);
       if (logs.length > 3) {
         logs.shift();

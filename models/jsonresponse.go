@@ -59,3 +59,17 @@ type BBoxFinal struct {
 		} `json:"data"`
 	} `json:"result"`
 }
+
+type ChromeJSONResponse struct {
+	Timestamp string
+	Channels  struct {
+		Stable struct {
+			Downloads struct {
+				Headless []struct {
+					Platform string `json:"platform"`
+					URL      string `json:"url"`
+				} `json:"chrome-headless-shell"`
+			} `json:"downloads"`
+		} `json:"Stable"`
+	} `json:"channels"`
+}
