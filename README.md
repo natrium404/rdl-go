@@ -41,13 +41,14 @@ Download the binary for your OS:
 
 #### How to Run:
 
-- Windows: Double-click rdl.exe or run via Command Prompt:
+- **Windows**:
+  Double-click rdl.exe or run via Command Prompt:
 
 ```sh
 rdl.exe
 ```
 
-- Linux:
+- **Linux**:
 
 ```sh
 chmod +x rdl
@@ -95,7 +96,7 @@ wails build
 
 ## Contributing
 
-For contribution [CONTRIBUTING.md]()
+For contribution [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
 

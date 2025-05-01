@@ -5,11 +5,11 @@ Whether you're fixing bugs, suggesting improvements, or adding new features, thi
 
 ## Table of Contents
 
-- [How to Contribute](<CONTRIBUTING#How to Contribute>)
-- [Development Setup](<CONTRIBUTING#Development Setup>)
-- [Code Guidelines](<CONTRIBUTING#Code Guidelines>)
-- [Submitting a Pull Request](<CONTRIBUTING#Submitting a Pull Request>)
-- [Feature Requests & Bug Reports](<CONTRIBUTING#Feature Requests & Bug Reports>)
+- [How to Contribute](<CONTRIBUTING.md#How to Contribute>)
+- [Development Setup](<CONTRIBUTING.md#Development Setup>)
+- [Code Guidelines](<CONTRIBUTING.md#Code Guidelines>)
+- [Submitting a Pull Request](<CONTRIBUTING.md#Submitting a Pull Request>)
+- [Feature Requests & Bug Reports](<CONTRIBUTING.md#Feature Requests & Bug Reports>)
 
 ## How to Contribute
 
@@ -27,7 +27,7 @@ git checkout -b feature/your-feature-name
 git push origin feature/your-feature-name
 ```
 
-Open a Pull Request from your branch to main
+- Open a Pull Request from your branch to main
 
 ## Development Setup
 
