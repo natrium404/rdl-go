@@ -9,7 +9,7 @@ RDL (short for Reel Downloader) is a cross-platform lightweight application (cur
 - **Separate audio/video download**: Download the video and audio separately.
 - **Chromium-based scraping**: Uses chromedp to scrape reel pages.
 - Automatic browser detection.
-- Detects existing Chromium-based browsers on the system.
+- Detects existing Chromium-based (Chromium and Google Chrome) browsers on the system.
 - If none is found, download a `chromium-headless-shell` to a local cache.
   - Windows: `%USERPROFILE%\AppData\Local\chromedp\`
   - Linux: `~/.cache/chromedp/`
@@ -35,14 +35,14 @@ Goto the [Releases](https://github.com/natrium404/rdl-go/releases) page.
 
 Download the binary for your OS:
 
-- Windows: `rdl.exe`
-- Linux: `rdl`
+- Windows: `rdl_windows.exe`
+- Linux: `rdl_linux`
   (Optional) Add the binary to your system’s PATH for easier access.
 
 #### How to Run:
 
 - **Windows**:
-  Double-click rdl.exe or run via Command Prompt:
+  Double-click rdl_windows.exe or run via Command Prompt:
 
 ```sh
 rdl.exe
@@ -51,13 +51,13 @@ rdl.exe
 - **Linux**:
 
 ```sh
-chmod +x rdl
-./rdl
+chmod +x rdl_linux
+./rdl_linux
 ```
 
 **NOTE:** RDL will automatically check for a Chromium-based browser. If none is found, it will download a chromium-headless-shell to a local cache folder.
 
-### Option 2: Development Setup
+### Option 2: Build
 
 #### Prerequisites:
 
@@ -70,7 +70,7 @@ chmod +x rdl
 - Clone the repo:
 
 ```sh
-git clone https://github.com/yourusername/rdl.git
+git clone https://github.com/natrium404/rdl.git
 cd rdl
 ```
 

@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	// "os"
 	"rdl/models"
 )
 
@@ -11,6 +12,13 @@ var (
 )
 
 func Log(message string) {
+	// Log to file
+	// file, err := os.OpenFile("scraper.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// file.WriteString(message + "\n")
+
 	if Logger != nil {
 		Logger(message)
 	}

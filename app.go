@@ -36,6 +36,21 @@ func (a *App) startup(ctx context.Context) {
 	}
 }
 
+// Check for update
+func (a *App) CheckForUpdate() *VersionInfo {
+	versionInfo, _ := cachedVersion()
+
+	return versionInfo
+}
+
+func (a *App) Update(asset *Asset) error {
+	err := downloadAndReplace(asset)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Scrape the web page from the url
 func (a *App) ScrapeWebPage(url string) scraper.Response {
 	response := scraper.Scraper(url)

@@ -14,21 +14,6 @@ import (
 type Scrape struct{}
 
 func scrapeFromURL(url string) (string, bool) {
-	// Chrome options
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("headless", true),
-		chromedp.Flag("disable-gpu", true),
-		chromedp.Flag("no-sandbox", true),
-		chromedp.Flag("single-process", true),
-		chromedp.Flag("disable-dev-shm-usage", true),
-		chromedp.Flag("memory-pressure-off", true),
-		chromedp.Flag("remote-debugging-port", "0"),
-		chromedp.Flag("no-zygote", true),
-		chromedp.Flag("disable-extension", true),
-		chromedp.Flag("disable-plugins", true),
-		chromedp.Flag("disable-default-apps", true),
-		chromedp.Flag("disable-sync", true))
-
 	// Find browser
 	browser := findBrowser()
 	if browser.Path != "" {
@@ -58,9 +43,9 @@ func scrapeFromURL(url string) (string, bool) {
 
 	}
 
-	opts = append(opts, chromedp.ExecPath(browser.Path))
+	opts := gerChromeOptions(browser.Path)
 
-	ctx, cancle := context.WithTimeout(context.Background(), 40*time.Second)
+	ctx, cancle := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancle()
 
 	Log("Initializing the browser...")

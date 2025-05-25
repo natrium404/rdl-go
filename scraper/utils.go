@@ -16,6 +16,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/chromedp/chromedp"
 )
 
 type BrowserInfo struct {
@@ -110,23 +112,6 @@ func findBrowser() BrowserInfo {
 				`C:\Program Files\Google\Chrome\Application\chrome.exe`,
 				`C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`,
 			},
-		}, {
-			"Edge", []string{
-				"/usr/bin/microsoft-edge",
-				"/usr/bin/microsoft-edge-stable",
-				`C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`,
-			},
-		}, {
-			"Brave", []string{
-				"/usr/bin/brave-browser",
-				`C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe`,
-			},
-		}, {
-			"Chromium", []string{
-				"/usr/bin/chromium",
-				"/usr/bin/chromium-browser",
-				`C:\Program Files\Chromium\Application\chrome.exe`,
-			},
 		},
 	}
 
@@ -145,9 +130,7 @@ func findBrowser() BrowserInfo {
 	execuables := []string{
 		"google-chrome", "google-chrome-stable",
 		"chromium", "chromium-browser",
-		"chrome", "microsoft-edge",
-		"microsoft-edge-stable", "brave",
-		"brave-browser",
+		"chrome",
 	}
 
 	for _, name := range execuables {
@@ -171,7 +154,7 @@ func findDownloadedBrowser() BrowserInfo {
 	}
 
 	platform := getPlatform()
-	shellPath := getExecutable(filepath.Join(cacheDir, "chromedp", fmt.Sprintf("chrome-headless-shell-%s", platform)))
+	shellPath := getExecutable(filepath.Join(cacheDir, "rdl", fmt.Sprintf("chrome-headless-shell-%s", platform)))
 	if _, err = os.Stat(shellPath); err == nil {
 		return BrowserInfo{
 			Name: "Chrome",
@@ -221,7 +204,47 @@ func downloadBrowser(dir string) (string, error) {
 		return "", err
 	}
 
+	Log("DOWNLOAD DONE")
+
 	return filename, nil
+}
+
+func gerChromeOptions(browserPath string) []chromedp.ExecAllocatorOption {
+	// Chrome options
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
+		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("disable-extensions", true),
+		chromedp.Flag("disable-plugins", true),
+		chromedp.Flag("disable-default-apps", true),
+		chromedp.Flag("disable-sync", true),
+		chromedp.Flag("disable-translate", true),
+		chromedp.Flag("disable-background-networking", true),
+		chromedp.Flag("disable-background-timer-throttling", true),
+		chromedp.Flag("disable-client-side-phishing-detection", true),
+		chromedp.Flag("disable-component-update", true),
+		chromedp.Flag("disable-hang-monitor", true),
+		chromedp.Flag("disable-popup-blocking", true),
+		chromedp.Flag("disable-prompt-on-repost", true),
+		chromedp.Flag("metrics-recording-only", true),
+		chromedp.Flag("safebrowsing-disable-auto-update", true),
+		chromedp.Flag("no-first-run", true),
+		chromedp.Flag("no-default-browser-check", true),
+		chromedp.Flag("incognito", true),
+		chromedp.Flag("remote-debugging-port", "0"),
+		chromedp.Flag("no-sandbox", false),
+		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("single-process", false),
+
+		chromedp.Flag("disable-logging", true),
+		chromedp.Flag("log-level", "3"),
+		chromedp.Flag("silent", true),
+		chromedp.Flag("disable-breakpad", true),
+		chromedp.Flag("disable-crash-reporter", true),
+
+		chromedp.ExecPath(browserPath),
+	)
+	return opts
 }
 
 // Get the os platform
@@ -274,6 +297,10 @@ func downloadFile(downloadURL, downloadPath string) (string, error) {
 	}
 
 	filename := path.Base(parseURL.Path)
+	err = os.MkdirAll(downloadPath, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
 	output, err := os.Create(filepath.Join(downloadPath, filename))
 	if err != nil {
 		return "", err
@@ -292,7 +319,7 @@ func (pb *ProgressBar) Write(b []byte) (int, error) {
 	pb.done += int64(byteLength)
 
 	percentage := float64(pb.done) / float64(pb.total) * 100
-	ProgressLog(fmt.Sprintf("Downloading... [%.2f%%]", percentage))
+	ProgressLog(fmt.Sprintf("Downloading chrome-headless-shell... \n[%.2f%%]", percentage))
 	return byteLength, nil
 }
 

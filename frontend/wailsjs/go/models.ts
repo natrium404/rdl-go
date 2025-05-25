@@ -1,3 +1,59 @@
+export namespace main {
+	
+	export class Asset {
+	    browser_download_url: string;
+	    name: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Asset(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.browser_download_url = source["browser_download_url"];
+	        this.name = source["name"];
+	    }
+	}
+	export class VersionInfo {
+	    current_version: string;
+	    latest_version: string;
+	    // Go type: time
+	    last_checked: any;
+	    asset: Asset;
+	
+	    static createFrom(source: any = {}) {
+	        return new VersionInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.current_version = source["current_version"];
+	        this.latest_version = source["latest_version"];
+	        this.last_checked = this.convertValues(source["last_checked"], null);
+	        this.asset = this.convertValues(source["asset"], Asset);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace models {
 	
 	export class Audio {

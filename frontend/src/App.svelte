@@ -2,19 +2,38 @@
   import "./app.css";
 
   import { EventsOn } from "../wailsjs/runtime/runtime.js";
-  import { ScrapeWebPage, SaveFile } from "../wailsjs/go/main/App.js";
+  import {
+    ScrapeWebPage,
+    SaveFile,
+    CheckForUpdate,
+    Update,
+  } from "../wailsjs/go/main/App.js";
 
-  import { ArrowDownToDotIcon, Search, SearchIcon, XIcon } from "lucide-svelte";
+  import {
+    ArrowDownToDotIcon,
+    Info,
+    Loader,
+    MousePointerClick,
+    Search,
+    SearchIcon,
+    XIcon,
+  } from "lucide-svelte";
   import Button from "./lib/Button.svelte";
   import { onMount } from "svelte";
-  import { scraper } from "../wailsjs/go/models";
-  import { cn } from "./lib/utils";
+  import { scraper, main } from "../wailsjs/go/models";
+  import { cn, compareVersion } from "./lib/utils";
   import { blur, fade, slide } from "svelte/transition";
 
   let url = $state("");
   let showURLForm = $state(true);
+  let showSearchButton = $state(true);
   let showDownload = $state(false);
   let isError = $state(false);
+
+  let isUpdateAvailable = $state(false);
+  let versionInfo = $state(main.VersionInfo.createFrom());
+  let updating = $state(false);
+  let updateText = $state("New version available.");
 
   let res = $state(scraper.Response.createFrom());
   let data = $derived(res.Data);
@@ -32,10 +51,37 @@
     });
 
     EventsOn("progressbar", (message) => {
+      showSearchButton = false;
       logQueue.push(message);
       logDelay(0);
     });
   });
+
+  const checkForUpdate = async () => {
+    versionInfo = await CheckForUpdate();
+    const isLatest = compareVersion(
+      versionInfo.current_version,
+      versionInfo.latest_version,
+    );
+
+    if (isLatest < 0) {
+      isUpdateAvailable = true;
+    }
+  };
+
+  onMount(checkForUpdate);
+
+  const update = async () => {
+    updating = true;
+
+    const err = await Update(versionInfo.asset);
+    if (err === null) {
+      updating = false;
+      checkForUpdate();
+      updateText = "New version updated. Restart the application.";
+      return;
+    }
+  };
 
   const logDelay = async (delay: number = 200) => {
     if (processing) return;
@@ -49,6 +95,9 @@
       logs.push(nextLog);
       if (logs.length > 3) {
         logs.shift();
+        if (nextLog === "DOWNLOAD DONE") {
+          showSearchButton = true;
+        }
         if (nextLog === "DONE") {
           showURLForm = !showURLForm;
         }
@@ -87,7 +136,9 @@
   >
     {#if !data?.Reel}
       <div class="w-full h-full flex justify-center items-center">
-        <p class="font-bold text-xl">Opps... No reel found</p>
+        {#if !showURLForm}
+          <p class="font-bold text-xl">Opps... No reel found</p>
+        {/if}
       </div>
     {:else}
       <video
@@ -109,7 +160,6 @@
       class="absolute top-0 right-0 translate-y-2 -translate-x-2 flex flex-col gap-1"
     >
       <!-- Search button -->
-
       {#if !showURLForm}
         <Button clickHandler={() => (showURLForm = !showURLForm)}>
           <SearchIcon />
@@ -178,64 +228,112 @@
     <!-- URL form -->
     {#if showURLForm}
       <div
-        class="absolute flex top-0 left-0 justify-center items-center w-full h-full backdrop-blur-lg bg-black/85"
+        class="absolute flex flex-col top-0 left-0 justify-between items-center w-full h-full backdrop-blur-lg bg-black/85"
         role="dialog"
         in:blur
         out:blur
       >
-        {#if url || data?.Reel}
-          <Button
-            className="absolute top-0 left-0 translate-x-2 translate-y-2"
-            clickHandler={() => (showURLForm = !showURLForm)}
-          >
-            <XIcon />
-          </Button>
-        {/if}
-
-        <!-- form -->
-        <form class="w-4/5 relative" onsubmit={formSubmit}>
-          <!-- Show logs form backend -->
-          <div class="w-full flex max-w-xs relative items-end">
-            <ul
-              class="absolute list-disc ml-6 mb-2 *:transition-colors *:duration-700 transition duration-300 *:ease-out ease-in"
+        <div>
+          {#if url || data?.Reel}
+            <Button
+              className="absolute top-0 left-0 translate-x-2 translate-y-2"
+              clickHandler={() => (showURLForm = !showURLForm)}
             >
-              {#each logs as log}
-                <li
-                  class={cn(
-                    "not-last:first:text-zinc-400/40 not-first:not-last:text-zinc-400/60 text-zinc-400 last:font-semibold",
-                    isError && "text-red-800",
-                  )}
-                  in:slide
-                  out:fade
-                >
-                  {log}
-                </li>
-              {/each}
-            </ul>
-          </div>
+              <XIcon />
+            </Button>
+          {/if}
+        </div>
 
-          <!-- URL input -->
-          <div class="flex gap-1">
-            <input
-              bind:value={url}
-              placeholder="Paste the reel url..."
-              type="text"
-              class={cn(
-                "w-full rounded-md border bg-zinc-800  text-white placeholder:text-white ring-0 focus:border-blue-500 transition-colors duration-200 outline-none shadow-md focus:bg-zinc-900 border-zinc-700",
-                isError && "border-red-500",
-              )}
-            />
+        <div class="w-full flex flex-col justify-center items-center">
+          <!-- form -->
+          <form class="w-4/5 relative" onsubmit={formSubmit}>
+            <!-- Show logs form backend -->
+            <div class="w-full flex max-w-xs relative items-end">
+              <ul
+                class="absolute list-disc ml-6 mb-2 *:transition-colors *:duration-700 transition duration-300 *:ease-out ease-in"
+              >
+                {#each logs as log}
+                  <li
+                    class={cn(
+                      "not-last:first:text-zinc-400/40 not-first:not-last:text-zinc-400/60 text-zinc-400 last:font-semibold",
+                      isError && "text-red-800",
+                    )}
+                    in:slide
+                    out:fade
+                  >
+                    {log}
+                  </li>
+                {/each}
+              </ul>
+            </div>
 
-            <button
-              class={cn(
-                "bg-zinc-800 px-2.5 rounded-full disabled:cursor-not-allowed cursor-pointer hover:bg-zinc-800/90",
-                isError && "text-red-800",
-              )}
-              type="submit"
-              disabled={!url}><Search /></button
-            >
+            <!-- URL input -->
+            <div class="flex gap-1">
+              <input
+                bind:value={url}
+                placeholder="Paste the reel url..."
+                type="text"
+                class={cn(
+                  "w-full rounded-md border bg-zinc-800  text-white placeholder:text-white ring-0 focus:border-blue-500 transition-colors duration-200 outline-none shadow-md focus:bg-zinc-900 border-zinc-700",
+                  isError && "border-red-500",
+                )}
+              />
+
+              <button
+                class={cn(
+                  "bg-zinc-800 px-2.5 rounded-full disabled:cursor-not-allowed cursor-pointer hover:bg-zinc-800/90",
+                  isError && "text-red-800",
+                )}
+                type="submit"
+                disabled={!url || !showSearchButton}><Search /></button
+              >
+            </div>
+          </form>
+          {#if isUpdateAvailable}
+            <div class="text-zinc-400 mt-1.5 w-4/5 flex justify-start text-sm">
+              <p class="flex gap-1 justify-center items-center">
+                <Info class="size-4.5 stroke-blue-400" />
+                <span>{updateText}</span>
+              </p>
+            </div>
+          {/if}
+        </div>
+        <footer
+          class="text-zinc-400 pb-2.5 text-xs flex flex-col items-center gap-1"
+        >
+          <div class="flex items-center gap-1">
+            <p>
+              <span>{versionInfo.current_version}</span>
+            </p>
+            <p>•</p>
+            <p>Made with ❤️</p>
+            <p>•</p>
+            <p>Natrium</p>
+            {#if isUpdateAvailable}
+              <p>•</p>
+              <p class="flex items-center gap-1 font-semibold underline group">
+                <span>
+                  {#if updating}
+                    Updating...
+                  {:else}
+                    <button class="inline cursor-pointer" onclick={update}
+                      >Update</button
+                    >
+                  {/if}
+                </span>
+                <span>
+                  {#if updating}
+                    <Loader class="animate-spin" />
+                  {:else}
+                    <MousePointerClick
+                      class="w-4.5 group-hover:animate-bounce"
+                    />
+                  {/if}
+                </span>
+              </p>
+            {/if}
           </div>
-        </form>
+        </footer>
       </div>
     {/if}
   </div>
