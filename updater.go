@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"rdl/models"
 	"runtime"
 	"time"
 )
@@ -27,10 +28,10 @@ type Asset struct {
 }
 
 type VersionInfo struct {
-	CurrentVersion string    `json:"current_version"`
-	LatestVersion  string    `json:"latest_version"`
-	LastChecked    time.Time `json:"last_checked"`
-	Asset          Asset     `json:"asset"`
+	CurrentVersion string `json:"current_version"`
+	LatestVersion  string `json:"latest_version"`
+	LastChecked    string `json:"last_checked"`
+	Asset          Asset  `json:"asset"`
 }
 
 func cachedVersion() (*VersionInfo, error) {
@@ -39,7 +40,7 @@ func cachedVersion() (*VersionInfo, error) {
 		return nil, err
 	}
 
-	programCacheDir := path.Join(userCacheDir, "rdl")
+	programCacheDir := path.Join(userCacheDir, models.DOWNLOAD_CACHE_DIR)
 	err = os.MkdirAll(programCacheDir, os.ModePerm)
 	if err != nil {
 		return nil, err
@@ -58,13 +59,21 @@ func cachedVersion() (*VersionInfo, error) {
 			return nil, err
 		}
 
-		if time.Since(version.LastChecked) >= 12*time.Hour {
+		lastCheckedTime, err := time.Parse(time.RFC3339, version.LastChecked)
+		if err != nil {
+			return nil, err
+		}
+
+		if time.Since(lastCheckedTime) >= 30*time.Minute {
 			latestVersion, err := latestVersionGithub()
 			if err != nil {
 				return nil, err
 			}
-			version.LatestVersion = latestVersion.Version
-			version.Asset = latestVersion.Asset
+			version = VersionInfo{
+				CurrentVersion: models.VERSION,
+				LatestVersion:  latestVersion.Version,
+				Asset:          latestVersion.Asset,
+			}
 		}
 	} else if os.IsNotExist(err) {
 		latestVersion, err := latestVersionGithub()
@@ -73,9 +82,9 @@ func cachedVersion() (*VersionInfo, error) {
 		}
 
 		version = VersionInfo{
-			CurrentVersion: VERSION,
+			CurrentVersion: models.VERSION,
 			LatestVersion:  latestVersion.Version,
-			LastChecked:    time.Now().UTC(),
+			LastChecked:    time.Now().UTC().Format(time.RFC3339),
 			Asset:          latestVersion.Asset,
 		}
 

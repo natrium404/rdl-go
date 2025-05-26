@@ -17,8 +17,7 @@ export namespace main {
 	export class VersionInfo {
 	    current_version: string;
 	    latest_version: string;
-	    // Go type: time
-	    last_checked: any;
+	    last_checked: string;
 	    asset: Asset;
 	
 	    static createFrom(source: any = {}) {
@@ -29,7 +28,7 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.current_version = source["current_version"];
 	        this.latest_version = source["latest_version"];
-	        this.last_checked = this.convertValues(source["last_checked"], null);
+	        this.last_checked = source["last_checked"];
 	        this.asset = this.convertValues(source["asset"], Asset);
 	    }
 	

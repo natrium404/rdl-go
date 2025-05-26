@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -154,7 +155,7 @@ func findDownloadedBrowser() BrowserInfo {
 	}
 
 	platform := getPlatform()
-	shellPath := getExecutable(filepath.Join(cacheDir, "rdl", fmt.Sprintf("chrome-headless-shell-%s", platform)))
+	shellPath := getExecutable(filepath.Join(cacheDir, models.DOWNLOAD_CACHE_DIR, fmt.Sprintf("chrome-headless-shell-%s", platform)))
 	if _, err = os.Stat(shellPath); err == nil {
 		return BrowserInfo{
 			Name: "Chrome",
@@ -209,9 +210,9 @@ func downloadBrowser(dir string) (string, error) {
 	return filename, nil
 }
 
-func gerChromeOptions(browserPath string) []chromedp.ExecAllocatorOption {
+func getChromeOptions(browserPath string) []chromedp.ExecAllocatorOption {
 	// Chrome options
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+	opts := []chromedp.ExecAllocatorOption{
 		chromedp.Flag("headless", true),
 		chromedp.Flag("disable-gpu", true),
 		chromedp.Flag("disable-extensions", true),
@@ -243,8 +244,50 @@ func gerChromeOptions(browserPath string) []chromedp.ExecAllocatorOption {
 		chromedp.Flag("disable-crash-reporter", true),
 
 		chromedp.ExecPath(browserPath),
-	)
+	}
+
+	// Hide console window on Windows
+	if runtime.GOOS == "windows" {
+		opts = append(opts, chromedp.CombinedOutput(nil))
+	}
+
 	return opts
+}
+
+func createChromeContext(browserPath string) (context.Context, context.CancelFunc, error) {
+	opts := getChromeOptions(browserPath)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+
+	// For Windows
+	if runtime.GOOS == "windows" {
+		allocOpts := append(opts,
+			chromedp.Env("CHROME_NO_SANDBOX=1"),
+			chromedp.WindowSize(1, 1))
+
+		optCtx, optCancel := chromedp.NewExecAllocator(ctx, allocOpts...)
+		chromeCtx, chromeCancel := chromedp.NewContext(optCtx, chromedp.WithLogf(func(string, ...interface{}) {}))
+
+		combinedCancel := func() {
+			chromeCancel()
+			optCancel()
+			cancel()
+		}
+
+		return chromeCtx, combinedCancel, nil
+	}
+
+	// For other
+	optCtx, optCancel := chromedp.NewExecAllocator(ctx, opts...)
+	chromeCtx, chromeCancel := chromedp.NewContext(optCtx)
+
+	combinedCancel := func() {
+		chromeCancel()
+		optCancel()
+		cancel()
+	}
+
+	return chromeCtx, combinedCancel, nil
 }
 
 // Get the os platform

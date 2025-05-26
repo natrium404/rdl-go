@@ -1,35 +1,107 @@
-# Build Directory
+# RDL (Reel Downloader)
 
-The build directory is used to house all the build files and assets for your application. 
+RDL (short for Reel Downloader) is a cross-platform lightweight application (currently supporting Windows and Linux) designed to download reels. Built with modern technologies, RDL offers a clean and user-friendly interface.
 
-The structure is:
+## Features
 
-* bin - Output directory
-* darwin - macOS specific files
-* windows - Windows specific files
+- **Cross-platform support**: Runs on both Windows and Linux.
+- **Original reel download**: Fetch and download the original video.
+- **Separate audio/video download**: Download the video and audio separately.
+- **Chromium-based scraping**: Uses chromedp to scrape reel pages.
+- Automatic browser detection.
+- Detects existing Chromium-based (Chromium and Google Chrome) browsers on the system.
+- If none is found, download a `chromium-headless-shell` to a local cache.
+  - Windows: `%USERPROFILE%\AppData\Local\chromedp\`
+  - Linux: `~/.cache/chromedp/`
+- **Dark-themed UI**: Built with Svelte, the UI offers a sleek design and enhanced user experience.
 
-## Mac
+## Tech Stack
 
-The `darwin` directory holds files specific to Mac builds.
-These may be customised and used as part of the build. To return these files to the default state, simply delete them
-and
-build with `wails build`.
+- **Frontend**: [Svelte](https://svelte.dev/)
+- **Backend**: [Go](https://go.dev/)
+- **Application Framework**: [Wails](https://wails.io/)
+- **Web Scraping**: [chromedp](https://github.com/chromedp/chromedp)
 
-The directory contains the following files:
+## TODO
 
-- `Info.plist` - the main plist file used for Mac builds. It is used when building using `wails build`.
-- `Info.dev.plist` - same as the main plist file but used when building using `wails dev`.
+- [ ] Auto-update mechanism
+- [ ] Support for downloading reels from private accounts
 
-## Windows
+## Installation
 
-The `windows` directory contains the manifest and rc files used when building with `wails build`.
-These may be customised for your application. To return these files to the default state, simply delete them and
-build with `wails build`.
+### Option 1: Binaries
 
-- `icon.ico` - The icon used for the application. This is used when building using `wails build`. If you wish to
-  use a different icon, simply replace this file with your own. If it is missing, a new `icon.ico` file
-  will be created using the `appicon.png` file in the build directory.
-- `installer/*` - The files used to create the Windows installer. These are used when building using `wails build`.
-- `info.json` - Application details used for Windows builds. The data here will be used by the Windows installer,
-  as well as the application itself (right click the exe -> properties -> details)
-- `wails.exe.manifest` - The main application manifest file.
+Goto the [Releases](https://github.com/natrium404/rdl-go/releases) page.
+
+Download the binary for your OS:
+
+- Windows: `rdl_windows.exe`
+- Linux: `rdl_linux`
+  (Optional) Add the binary to your system’s PATH for easier access.
+
+#### How to Run:
+
+- **Windows**:
+  Double-click rdl_windows.exe or run via Command Prompt:
+
+```sh
+rdl.exe
+```
+
+- **Linux**:
+
+```sh
+chmod +x rdl_linux
+./rdl_linux
+```
+
+**NOTE:** RDL will automatically check for a Chromium-based browser. If none is found, it will download a chromium-headless-shell to a local cache folder.
+
+### Option 2: Build
+
+#### Prerequisites:
+
+- Go (v1.20 or later)
+- Node.js (for Svelte)
+- Wails CLI
+
+#### Steps:
+
+- Clone the repo:
+
+```sh
+git clone https://github.com/natrium404/rdl.git
+cd rdl
+```
+
+- Install frontend dependencies:
+
+```sh
+cd frontend
+npm install
+cd ..
+```
+
+- Run in development mode:
+
+```sh
+wails dev
+```
+
+- Build production binary (optional):
+
+```sh
+wails build
+```
+
+## Contributing
+
+For contribution [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## FIN
+
+![SLEEPY](./frontend/public/sleepy-sleepy-cat.gif)

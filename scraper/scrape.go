@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"rdl/models"
 	"strings"
-	"time"
 
 	"github.com/chromedp/chromedp"
 )
@@ -26,7 +26,7 @@ func scrapeFromURL(url string) (string, bool) {
 			Log(fmt.Sprintf("Can't get the cache diretory. Error: %s", err))
 			return "", false
 		}
-		downloadDir := filepath.Join(cacheDir, "chromedp")
+		downloadDir := filepath.Join(cacheDir, models.DOWNLOAD_CACHE_DIR)
 		filename, err := downloadBrowser(downloadDir)
 		if err != nil {
 			Log(fmt.Sprintf("Oops... Download failed. Error: %s", err))
@@ -43,22 +43,19 @@ func scrapeFromURL(url string) (string, bool) {
 
 	}
 
-	opts := gerChromeOptions(browser.Path)
-
-	ctx, cancle := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancle()
-
 	Log("Initializing the browser...")
-	optCtx, cancle := chromedp.NewExecAllocator(ctx, opts...)
-	defer cancle()
-
-	chromeCtx, cancle := chromedp.NewContext(optCtx)
-	defer cancle()
+	// Use the new context creation function that handles Windows popup hiding
+	chromeCtx, cancel, err := createChromeContext(browser.Path)
+	if err != nil {
+		Log(fmt.Sprintf("Failed to create Chrome context. Error: %s", err))
+		return "", false
+	}
+	defer cancel()
 
 	Log("Checking the reel...")
 	Log("Wait!! This might take a moment...")
 	var res string
-	err := chromedp.Run(chromeCtx, chromedp.Navigate(url),
+	err = chromedp.Run(chromeCtx, chromedp.Navigate(url),
 		chromedp.WaitReady("script"),
 	)
 	if err != nil {
